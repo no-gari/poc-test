@@ -50,6 +50,7 @@ export async function POST(req: Request) {
             rulesDescription += `- Rule Type: ${r.type}\n`;
             if (r.type === 'ChangeSpecific' && r.allowedKeywords) {
                 rulesDescription += `- Allowed Keywords: ${r.allowedKeywords}\n`;
+                rulesDescription += `  (NOTE: The original text is ALWAYS allowed to be kept. If changed, it MUST be changed to one of the Allowed Keywords.)\n`;
             }
             if (r.type === 'MustMatch' && r.expectedText) {
                 rulesDescription += `- Expected Exact Text: ${r.expectedText}\n`;
