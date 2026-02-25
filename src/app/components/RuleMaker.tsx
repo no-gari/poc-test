@@ -58,7 +58,9 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
             y: 50,
             w: 250,
             h: 50,
-            text: '텍스트를 입력하세요'
+            text: '텍스트를 입력하세요',
+            fontSize: 18,
+            textAlign: 'left'
         };
         setElements([...elements, newEl]);
         setSelectedId(newEl.id);
@@ -88,8 +90,9 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
 
     const handleElementPointerDown = (e: ReactMouseEvent, id: string, action: 'drag' | 'resize' = 'drag') => {
         if (toolMode === 'draw_region') return; // let canvas handle it
+        e.stopPropagation(); // Stop propagation before returning so it doesn't trigger canvas deselect
+
         if (editingTextId === id) return; // Prevent drag/resize while typing
-        e.stopPropagation();
         setSelectedId(id);
 
         const el = elements.find(el => el.id === id);
@@ -193,6 +196,30 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
         if (selectedId === id) setSelectedId(null);
     };
 
+    const handleTextSelection = () => {
+        if (!selectedId) return;
+        const selection = window.getSelection();
+        if (selection && selection.toString().trim() !== '') {
+            const selectedText = selection.toString().trim();
+            // Create a new rule for this specific text automatically
+            const newRule: Rule = {
+                id: Math.random().toString(36).substring(7),
+                elementId: selectedId,
+                type: 'MustMatch',
+                targetText: selectedText,
+            };
+            setRules([...rules, newRule]);
+
+            // Clear selection so they don't accidentally create it twice
+            selection.removeAllRanges();
+        }
+    };
+
+    const updateElementStyle = (updates: Partial<CanvasElement>) => {
+        if (!selectedId) return;
+        setElements(elements.map(el => el.id === selectedId ? { ...el, ...updates } : el));
+    };
+
     const selectedElement = elements.find(e => e.id === selectedId);
     const rulesForSelected = rules.filter(r => r.elementId === selectedId);
 
@@ -256,6 +283,44 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
                     >
                         <Square size={16} /> 영역 지정 (드래그)
                     </button>
+
+                    {/* Formatting Tools (Only show when text is selected) */}
+                    {selectedElement?.type === 'text' && (
+                        <div className="flex items-center gap-2 border-l border-gray-300 pl-4 animate-in fade-in zoom-in duration-200">
+                            <span className="text-xs text-gray-500 font-bold mr-1">텍스트 편집:</span>
+
+                            {/* Font Size */}
+                            <div className="flex bg-gray-50 rounded-lg border shadow-sm">
+                                <button
+                                    className="px-2 py-1.5 hover:bg-gray-200"
+                                    onClick={() => updateElementStyle({ fontSize: Math.max(10, (selectedElement.fontSize || 18) - 2) })}
+                                >-</button>
+                                <span className="px-3 py-1.5 text-sm font-medium border-x border-gray-200 min-w-[40px] text-center">
+                                    {selectedElement.fontSize || 18}
+                                </span>
+                                <button
+                                    className="px-2 py-1.5 hover:bg-gray-200"
+                                    onClick={() => updateElementStyle({ fontSize: Math.min(100, (selectedElement.fontSize || 18) + 2) })}
+                                >+</button>
+                            </div>
+
+                            {/* Alignment */}
+                            <div className="flex bg-gray-50 rounded-lg border shadow-sm shadow-sm overflow-hidden text-sm font-bold text-gray-600">
+                                <button
+                                    className={`px-3 py-1.5 hover:bg-gray-200 ${selectedElement.textAlign === 'left' || !selectedElement.textAlign ? 'bg-blue-100 text-[#1428A0]' : ''}`}
+                                    onClick={() => updateElementStyle({ textAlign: 'left' })}
+                                >좌</button>
+                                <button
+                                    className={`px-3 py-1.5 border-x border-gray-200 hover:bg-gray-200 ${selectedElement.textAlign === 'center' ? 'bg-blue-100 text-[#1428A0]' : ''}`}
+                                    onClick={() => updateElementStyle({ textAlign: 'center' })}
+                                >중</button>
+                                <button
+                                    className={`px-3 py-1.5 hover:bg-gray-200 ${selectedElement.textAlign === 'right' ? 'bg-blue-100 text-[#1428A0]' : ''}`}
+                                    onClick={() => updateElementStyle({ textAlign: 'right' })}
+                                >우</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -299,6 +364,7 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
                                         className={`absolute group cursor-move transition-shadow ${isSelected ? 'ring-2 ring-[#1428A0] z-20 shadow-md bg-white' : 'hover:ring-1 hover:ring-gray-300 z-10 bg-transparent'} ${el.type === 'region' && !isSelected ? 'border border-dashed border-gray-400 bg-blue-50/10' : ''}`}
                                         style={{ left: el.x, top: el.y, width: el.w, height: el.h }}
                                         onPointerDown={(e) => handleElementPointerDown(e, el.id, 'drag')}
+                                        onPointerUp={handleTextSelection}
                                         onDoubleClick={(e) => { e.stopPropagation(); if (toolMode === 'select' && el.type === 'text') setEditingTextId(el.id); }}
                                     >
                                         {el.type === 'text' && (
@@ -313,11 +379,14 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
                                                         setElements(newElems);
                                                     }}
                                                     className="w-full h-full bg-transparent resize-none border-none outline-none p-2 pointer-events-auto leading-relaxed shadow-inner"
-                                                    style={{ fontSize: '18px' }}
+                                                    style={{ fontSize: `${el.fontSize || 18}px`, textAlign: el.textAlign || 'left' }}
                                                     onBlur={() => setEditingTextId(null)}
                                                 />
                                             ) : (
-                                                <div className="w-full h-full p-2 pointer-events-none break-keep overflow-hidden leading-relaxed text-[18px]">
+                                                <div
+                                                    className="w-full h-full p-2 pointer-events-none break-keep overflow-hidden leading-relaxed"
+                                                    style={{ fontSize: `${el.fontSize || 18}px`, textAlign: el.textAlign || 'left' }}
+                                                >
                                                     {renderTextWithHighlights(el, elementRules)}
                                                 </div>
                                             )
@@ -382,6 +451,13 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
+
+                                {selectedElement.type === 'text' && (
+                                    <div className="bg-blue-50 border border-blue-200 text-blue-800 text-xs p-3 rounded-lg font-medium flex items-start gap-2 animate-in slide-in-from-top-2">
+                                        <span className="text-[16px] leading-none">💡</span>
+                                        <p>캔버스에서 방금 적은 <b>텍스트의 일부를 마우스 드래그</b>하면 손쉽게 부분 규칙이 알아서 등록됩니다!</p>
+                                    </div>
+                                )}
 
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between">

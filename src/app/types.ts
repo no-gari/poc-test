@@ -10,6 +10,8 @@ export interface CanvasElement {
     h: number;
     text?: string;
     src?: string;
+    fontSize?: number;
+    textAlign?: 'left' | 'center' | 'right';
 }
 
 export interface Rule {
