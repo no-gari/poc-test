@@ -92,7 +92,7 @@ Respond EXCLUSIVELY in the following JSON format. Start your response directly w
     `;
 
         // Make sure we use a model that supports vision
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+        const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
 
         const parts: any[] = [
             promptText,

@@ -129,7 +129,7 @@ export default function Validator({ elements, rules, onBack }: ValidatorProps) {
                                         <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center backdrop-blur z-20 transition-all rounded-lg">
                                             <Loader2 className="w-16 h-16 text-[#1428A0] animate-spin mb-6" />
                                             <p className="text-2xl font-black text-[#1428A0] animate-pulse tracking-tight">AI 검사 수행 중...</p>
-                                            <p className="text-gray-500 font-medium mt-2">Gemini 2.5 Pro 모델이 문맥을 평가하고 있습니다.</p>
+                                            <p className="text-gray-500 font-medium mt-2">Gemini 3 Flash Preview 모델이 문맥을 평가하고 있습니다.</p>
                                         </div>
                                     )}
                                 </div>
