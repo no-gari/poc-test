@@ -88,9 +88,9 @@ export default function Validator({ elements, rules, onBack }: ValidatorProps) {
                                 <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                             </label>
                         ) : (
-                            <div className="relative inline-block w-full h-full bg-gray-100 flex items-center justify-center rounded-lg shadow-inner overflow-hidden">
-                                <div className="relative inline-block border bg-white shadow-md">
-                                    <img src={actualImage} alt="Actual Execution" className="max-w-none block object-contain" style={{ maxHeight: '80vh' }} />
+                            <div className="relative w-full h-full bg-gray-100 flex items-center justify-center rounded-lg shadow-inner overflow-hidden p-4">
+                                <div className="relative inline-block border bg-white shadow-md mx-auto my-auto object-contain">
+                                    <img src={actualImage} alt="Actual Execution" className="w-auto h-auto max-w-full block" style={{ maxHeight: 'calc(100vh - 250px)' }} />
 
                                     {status === 'DONE' && result?.items.map((res) => {
                                         const borderColors = {
@@ -113,7 +113,12 @@ export default function Validator({ elements, rules, onBack }: ValidatorProps) {
                                             <div
                                                 key={res.ruleId}
                                                 className={`absolute border-[3px] ${borderColors[res.status]} ${bgColors[res.status]} shadow-lg transition-all duration-300 ring-2 ring-white/50 backdrop-blur-[1px]`}
-                                                style={{ left: res.region.x, top: res.region.y, width: res.region.w, height: res.region.h }}
+                                                style={{
+                                                    left: res.region.isPercentage ? `${res.region.x}%` : res.region.x,
+                                                    top: res.region.isPercentage ? `${res.region.y}%` : res.region.y,
+                                                    width: res.region.isPercentage ? `${res.region.w}%` : res.region.w,
+                                                    height: res.region.isPercentage ? `${res.region.h}%` : res.region.h
+                                                }}
                                             >
                                                 <span className={`absolute -top-7 left-[-3px] text-xs px-2.5 py-1 font-bold rounded shadow-md flex items-center gap-1 whitespace-nowrap ${badgeColors[res.status]}`}>
                                                     {res.status === 'PASS' && <CheckCircle size={14} />}

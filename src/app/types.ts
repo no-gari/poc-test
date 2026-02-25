@@ -31,7 +31,7 @@ export interface InspectionResultItem {
     elementId: string;
     status: 'PASS' | 'FAIL' | 'WARN';
     reason: string;
-    region: { x: number; y: number; w: number; h: number };
+    region: { x: number; y: number; w: number; h: number; isPercentage?: boolean };
 }
 
 export interface InspectionResult {

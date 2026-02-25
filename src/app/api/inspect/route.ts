@@ -78,14 +78,26 @@ ${rulesDescription}
 
 Please analyze the execution image thoroughly. Determine if the visual text/image in the relevant areas complies with the rules provided.
 
+EXPLAIN YOUR REASONING IN KOREAN. (한국어로 판정 이유를 명확하게 설명하세요. 고객에게 전달되는 리포트입니다.)
+
+For each rule, you MUST find the EXACT bounding box of the corresponding element in the ACTUAL execution image. 
+Even if the rule fails or text is missing, find where the element is or was supposed to be.
+Return the bounding box as percentages (0 to 100) of the execution image's width and height.
+
 Respond EXCLUSIVELY in the following JSON format. Start your response directly with { and end with } without formatting backticks.
 {
   "matchRate": 90,
   "items": [
     {
       "ruleId": "The exact Rule ID from the prompt",
-      "status": "PASS" or "FAIL" or "WARN",
-      "reason": "Provide a clear and concise reason for your decision, referring to the visual evidence."
+      "status": "PASS" | "FAIL" | "WARN",
+      "reason": "한국어로 판정 이유 명확하게 작성",
+      "boundingBox": {
+        "x": 10.5,
+        "y": 20.0,
+        "w": 50.0,
+        "h": 30.5
+      }
     }
   ]
 }
@@ -111,9 +123,25 @@ Respond EXCLUSIVELY in the following JSON format. Start your response directly w
             parsedData.items = parsedData.items.map((item: any) => {
                 const matchedRule = rules.find((r: Rule) => r.id === item.ruleId);
                 const matchedElement = matchedRule ? elements.find((e: CanvasElement) => e.id === matchedRule.elementId) : null;
+
+                let region;
+                if (item.boundingBox && item.boundingBox.x !== undefined) {
+                    region = {
+                        isPercentage: true,
+                        x: item.boundingBox.x,
+                        y: item.boundingBox.y,
+                        w: item.boundingBox.w,
+                        h: item.boundingBox.h
+                    };
+                } else {
+                    region = matchedElement
+                        ? { isPercentage: false, x: matchedElement.x, y: matchedElement.y, w: matchedElement.w, h: matchedElement.h }
+                        : { isPercentage: false, x: 0, y: 0, w: 0, h: 0 };
+                }
+
                 return {
                     ...item,
-                    region: matchedElement ? { x: matchedElement.x, y: matchedElement.y, w: matchedElement.w, h: matchedElement.h } : { x: 0, y: 0, w: 0, h: 0 }
+                    region
                 };
             });
 
