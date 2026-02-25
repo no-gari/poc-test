@@ -58,7 +58,7 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
             y: 50,
             w: 250,
             h: 50,
-            text: '텍스트를 입력하세요',
+            text: '',
             fontSize: 18,
             textAlign: 'left'
         };
@@ -233,7 +233,7 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
     };
 
     const renderTextWithHighlights = (el: CanvasElement, elementRules: Rule[]) => {
-        if (!el.text) return null;
+        if (!el.text) return <span className="text-gray-300">텍스트를 입력하세요</span>;
         let renderedText = [] as React.ReactNode[];
         let lastIndex = 0;
 
@@ -371,6 +371,7 @@ export default function RuleMaker({ elements, setElements, rules, setRules, onNe
                                             isEditing ? (
                                                 <textarea
                                                     autoFocus
+                                                    placeholder="텍스트를 입력하세요"
                                                     value={el.text || ''}
                                                     onChange={(e) => {
                                                         const newElems = [...elements];
