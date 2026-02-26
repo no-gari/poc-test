@@ -48,6 +48,12 @@ export async function POST(req: Request) {
             if (originalText) rulesDescription += `- ${originalText} ${targetSubText}\n`;
 
             rulesDescription += `- Rule Type: ${r.type}\n`;
+            if (r.type === 'DeleteAllow') {
+                rulesDescription += `  (NOTE: The text is allowed to be completely DELETED OR KEPT exactly as it was. Both cases are perfectly fine. You MUST include this rule in the final JSON items report even if the text was deleted. If deleted, provide the bounding box of where the text used to be based on the original coordinates.)\n`;
+            }
+            if (r.type === 'ChangeAny') {
+                rulesDescription += `  (NOTE: The text is allowed to be MODIFIED to anything OR KEPT exactly as it was. Both cases are perfectly fine.)\n`;
+            }
             if (r.type === 'ChangeSpecific' && r.allowedKeywords) {
                 rulesDescription += `- Allowed Keywords: ${r.allowedKeywords}\n`;
                 rulesDescription += `  (NOTE: The original text is ALWAYS allowed to be kept. If changed, it MUST be changed to one of the Allowed Keywords.)\n`;
